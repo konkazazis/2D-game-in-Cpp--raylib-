@@ -85,3 +85,6 @@ src/external/SDL3/
 
 # === Emscripten (if compiling to Web) ===
 emsdk/   
+
+# === CMake FetchContent ===
+_deps/   

@@ -70,4 +70,3 @@ int main(void)
 
     return 0;
 }
-raylib example source code
