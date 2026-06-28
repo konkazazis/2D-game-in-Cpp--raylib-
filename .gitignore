@@ -1,0 +1,87 @@
+# === Compiled Binaries ===
+*.exe
+*.o
+*.a
+*.so
+*.dll
+*.dylib
+*.bc
+
+# === Build Directories ===
+bin/
+obj/
+build/
+Debug/
+Release/
+
+# === CMake ===
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+Makefile
+
+# === IDE Files ===
+# Visual Studio
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.user
+*.suo
+*.pdb
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+.vs/
+ipch/
+
+# Visual Studio Code
+.vscode/
+.clangd
+
+# JetBrains (CLion, Rider)
+.idea/
+cmake-build-*/
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+*.pbxuser
+*.mode*v*
+xcuserdata/
+DerivedData/
+
+# CodeBlocks
+*.layout
+*.depend
+
+# === OS Generated Files ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# === Temporary & Log Files ===
+*.log
+examples/**/logs/*
+*.tmp
+*~
+*.swp
+*.swo
+
+# === Raylib Specific ===
+# Ignore WASM/HTML5 build outputs in examples if present
+examples/**/*.wasm
+examples/**/*.data
+examples/**/*.js
+examples/**/*.html
+
+# Ignore external SDL libs if used for testing
+src/external/SDL2/
+src/external/SDL3/
+
+# === Emscripten (if compiling to Web) ===
+emsdk/   
