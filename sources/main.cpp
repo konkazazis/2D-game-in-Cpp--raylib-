@@ -61,10 +61,14 @@ int main(void)
 
     InitWindow(screenWidth, screenHeight, "raylib [core] example - 2d camera platformer");
 
+    // The texture used to draw the player, kept separate from the Player game-state struct
+    Texture2D playerTexture = LoadTexture("assets/idle/fighter_Idle_0001.png");
+
     Player player = {0};
     player.position = (Vector2){400, 280};
     player.speed = 0;
     player.canJump = false;
+
     EnvItem envItems[] = {
         {{0, 0, 1000, 400}, 0, LIGHTGRAY},
         {{0, 400, 1000, 200}, 1, GRAY},
@@ -104,8 +108,7 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())
     {
-        // Update
-        //----------------------------------------------------------------------------------
+
         float deltaTime = GetFrameTime();
 
         UpdatePlayer(&player, envItems, envItemsLength, deltaTime);
@@ -121,6 +124,7 @@ int main(void)
         {
             camera.zoom = 1.0f;
             player.position = (Vector2){400, 280};
+            player.speed = 0;
         }
 
         if (IsKeyPressed(KEY_C))
@@ -130,8 +134,6 @@ int main(void)
         cameraUpdaters[cameraOption](&camera, &player, envItems, envItemsLength, deltaTime, screenWidth, screenHeight);
         //----------------------------------------------------------------------------------
 
-        // Draw
-        //----------------------------------------------------------------------------------
         BeginDrawing();
 
         ClearBackground(LIGHTGRAY);
@@ -141,12 +143,24 @@ int main(void)
         for (int i = 0; i < envItemsLength; i++)
             DrawRectangleRec(envItems[i].rect, envItems[i].color);
 
-        Rectangle playerRect = {player.position.x - 20, player.position.y - 40, 40.0f, 40.0f};
-        DrawRectangleRec(playerRect, RED);
+        {
+            float drawSize = 100.0f;
+            Rectangle source = {0, 0, (float)playerTexture.width, (float)playerTexture.height};
+            Rectangle dest = {
+                player.position.x - drawSize / 2.0f,
+                player.position.y - drawSize / 2.0f,
+                drawSize,
+                drawSize};
 
-        DrawCircleV(player.position, 5.0f, GOLD);
+            DrawTexturePro(playerTexture, source, dest, (Vector2){0, 0}, 0.0f, WHITE);
+        }
 
         EndMode2D();
+
+        // DEBUG: screen-space info, independent of camera
+        DrawText(TextFormat("Player pos: %.1f, %.1f", player.position.x, player.position.y), 20, 180, 10, MAROON);
+        DrawText(TextFormat("Texture id: %d size: %dx%d", playerTexture.id, playerTexture.width, playerTexture.height), 20, 195, 10, MAROON);
+        DrawText(TextFormat("Camera target: %.1f, %.1f offset: %.1f, %.1f zoom: %.2f", camera.target.x, camera.target.y, camera.offset.x, camera.offset.y, camera.zoom), 20, 210, 10, MAROON);
 
         DrawText("Controls:", 20, 20, 10, BLACK);
         DrawText("- Right/Left to move", 40, 40, 10, DARKGRAY);
@@ -161,8 +175,7 @@ int main(void)
         //----------------------------------------------------------------------------------
     }
 
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
+    UnloadTexture(playerTexture);
     CloseWindow(); // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
