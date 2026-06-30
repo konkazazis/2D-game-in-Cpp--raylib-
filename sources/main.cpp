@@ -132,6 +132,16 @@ int main(void)
             Vector2 origin = {player.facingRight ? 100 : drawSize, 20};
 
             DrawTexturePro(playerTexture, source, destRec, origin, 0.0f, WHITE);
+
+            float screenX = destRec.x - origin.x;
+            float screenY = destRec.y - origin.y;
+
+            DrawRectangleLines(
+                (int)screenX,
+                (int)screenY,
+                (int)destRec.width,
+                (int)destRec.height,
+                MAROON);
         }
 
         EndMode2D();
