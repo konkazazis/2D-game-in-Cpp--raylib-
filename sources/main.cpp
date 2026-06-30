@@ -1,20 +1,3 @@
-/*******************************************************************************************
- *
- *   raylib [core] example - 2d camera platformer
- *
- *   Example complexity rating: [★★★☆] 3/4
- *
- *   Example originally created with raylib 2.5, last time updated with raylib 3.0
- *
- *   Example contributed by arvyy (@arvyy) and reviewed by Ramon Santamaria (@raysan5)
- *
- *   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
- *   BSD-like license that allows static linking with closed source software
- *
- *   Copyright (c) 2019-2025 arvyy (@arvyy)
- *
- ********************************************************************************************/
-
 #include "raylib.h"
 #include "raymath.h"
 
@@ -22,14 +5,12 @@
 #define PLAYER_JUMP_SPD 350.0f
 #define PLAYER_HOR_SPD 200.0f
 
-//----------------------------------------------------------------------------------
-// Types and Structures Definition
-//----------------------------------------------------------------------------------
-typedef struct Player
+typedef struct
 {
     Vector2 position;
     float speed;
     bool canJump;
+    bool facingRight; // Add this to track direction
 } Player;
 
 typedef struct EnvItem
@@ -39,9 +20,6 @@ typedef struct EnvItem
     Color color;
 } EnvItem;
 
-//----------------------------------------------------------------------------------
-// Module Functions Declaration
-//----------------------------------------------------------------------------------
 void UpdatePlayer(Player *player, EnvItem *envItems, int envItemsLength, float delta);
 void UpdateCameraCenter(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, float delta, int width, int height);
 void UpdateCameraCenterInsideMap(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, float delta, int width, int height);
@@ -49,13 +27,8 @@ void UpdateCameraCenterSmoothFollow(Camera2D *camera, Player *player, EnvItem *e
 void UpdateCameraEvenOutOnLanding(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, float delta, int width, int height);
 void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, float delta, int width, int height);
 
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
 int main(void)
 {
-    // Initialization
-    //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
     const int screenHeight = 450;
 
@@ -68,6 +41,7 @@ int main(void)
     player.position = (Vector2){400, 280};
     player.speed = 0;
     player.canJump = false;
+    bool facingRight = true;
 
     EnvItem envItems[] = {
         {{0, 0, 1000, 400}, 0, LIGHTGRAY},
@@ -103,7 +77,6 @@ int main(void)
         "Player push camera on getting too close to screen edge"};
 
     SetTargetFPS(60);
-    //--------------------------------------------------------------------------------------
 
     // Main game loop
     while (!WindowShouldClose())
@@ -130,9 +103,7 @@ int main(void)
         if (IsKeyPressed(KEY_C))
             cameraOption = (cameraOption + 1) % cameraUpdatersLength;
 
-        // Call update camera function by its pointer
         cameraUpdaters[cameraOption](&camera, &player, envItems, envItemsLength, deltaTime, screenWidth, screenHeight);
-        //----------------------------------------------------------------------------------
 
         BeginDrawing();
 
@@ -144,23 +115,26 @@ int main(void)
             DrawRectangleRec(envItems[i].rect, envItems[i].color);
 
         {
+
             float drawSize = 100.0f;
-            Rectangle source = {0, 0, (float)playerTexture.width, (float)playerTexture.height};
-            Rectangle dest = {
+
+            float sourceWidth = player.facingRight ? (float)playerTexture.width : -(float)playerTexture.width;
+            float sourceX = player.facingRight ? 0 : (float)playerTexture.width;
+
+            Rectangle source = {sourceX, 0, sourceWidth, (float)playerTexture.height};
+
+            Rectangle destRec = {
                 player.position.x - drawSize / 2.0f,
                 player.position.y - drawSize / 2.0f,
                 drawSize,
                 drawSize};
 
-            DrawTexturePro(playerTexture, source, dest, (Vector2){0, 0}, 0.0f, WHITE);
+            Vector2 origin = {player.facingRight ? 0 : drawSize, 0};
+
+            DrawTexturePro(playerTexture, source, destRec, origin, 0.0f, WHITE);
         }
 
         EndMode2D();
-
-        // DEBUG: screen-space info, independent of camera
-        DrawText(TextFormat("Player pos: %.1f, %.1f", player.position.x, player.position.y), 20, 180, 10, MAROON);
-        DrawText(TextFormat("Texture id: %d size: %dx%d", playerTexture.id, playerTexture.width, playerTexture.height), 20, 195, 10, MAROON);
-        DrawText(TextFormat("Camera target: %.1f, %.1f offset: %.1f, %.1f zoom: %.2f", camera.target.x, camera.target.y, camera.offset.x, camera.offset.y, camera.zoom), 20, 210, 10, MAROON);
 
         DrawText("Controls:", 20, 20, 10, BLACK);
         DrawText("- Right/Left to move", 40, 40, 10, DARKGRAY);
@@ -172,28 +146,36 @@ int main(void)
         DrawText(cameraDescriptions[cameraOption], 40, 160, 10, DARKGRAY);
 
         EndDrawing();
-        //----------------------------------------------------------------------------------
     }
 
     UnloadTexture(playerTexture);
-    CloseWindow(); // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
+    CloseWindow();
 
     return 0;
 }
 
 void UpdatePlayer(Player *player, EnvItem *envItems, int envItemsLength, float delta)
 {
+    // Horizontal Movement & Direction
     if (IsKeyDown(KEY_LEFT))
+    {
         player->position.x -= PLAYER_HOR_SPD * delta;
+        player->facingRight = false; // Face Left
+    }
     if (IsKeyDown(KEY_RIGHT))
+    {
         player->position.x += PLAYER_HOR_SPD * delta;
+        player->facingRight = true; // Face Right
+    }
+
+    // Jumping
     if (IsKeyDown(KEY_SPACE) && player->canJump)
     {
         player->speed = -PLAYER_JUMP_SPD;
         player->canJump = false;
     }
 
+    // Collision Detection
     bool hitObstacle = false;
     for (int i = 0; i < envItemsLength; i++)
     {
@@ -212,6 +194,7 @@ void UpdatePlayer(Player *player, EnvItem *envItems, int envItemsLength, float d
         }
     }
 
+    // Gravity & Application
     if (!hitObstacle)
     {
         player->position.y += player->speed * delta;
@@ -219,9 +202,10 @@ void UpdatePlayer(Player *player, EnvItem *envItems, int envItemsLength, float d
         player->canJump = false;
     }
     else
+    {
         player->canJump = true;
+    }
 }
-
 void UpdateCameraCenter(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, float delta, int width, int height)
 {
     camera->offset = (Vector2){width / 2.0f, height / 2.0f};
