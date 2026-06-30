@@ -10,7 +10,7 @@ typedef struct
     Vector2 position;
     float speed;
     bool canJump;
-    bool facingRight; // Add this to track direction
+    bool facingRight;
 } Player;
 
 typedef struct EnvItem
@@ -129,7 +129,7 @@ int main(void)
                 drawSize,
                 drawSize};
 
-            Vector2 origin = {player.facingRight ? 0 : drawSize, 0};
+            Vector2 origin = {player.facingRight ? 100 : drawSize, 20};
 
             DrawTexturePro(playerTexture, source, destRec, origin, 0.0f, WHITE);
         }
