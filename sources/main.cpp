@@ -124,13 +124,14 @@ int main(void)
             Rectangle source = {sourceX, 0, sourceWidth, (float)playerTexture.height};
 
             Rectangle destRec = {
-                player.position.x - drawSize / 2.0f,
-                player.position.y - drawSize / 2.0f,
+                player.position.x,
+                player.position.y,
                 drawSize,
                 drawSize};
 
-            Vector2 origin = {player.facingRight ? 100 : drawSize, 20};
-
+            float footPadding = 130.0f;
+            float footPaddingScaled = footPadding * (drawSize / (float)playerTexture.height);
+            Vector2 origin = {drawSize / 2.0f, drawSize - footPaddingScaled};
             DrawTexturePro(playerTexture, source, destRec, origin, 0.0f, WHITE);
 
             float screenX = destRec.x - origin.x;
